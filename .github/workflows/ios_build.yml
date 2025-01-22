@@ -38,6 +38,8 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -archivePath $PWD/build/App.xcarchive \
+            -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
             archive
 
       - name: Export IPA
@@ -46,7 +48,8 @@ jobs:
             -exportArchive \
             -archivePath $PWD/build/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
-            -exportPath $PWD/build
+            -exportPath $PWD/build \
+            -allowProvisioningUpdates
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
