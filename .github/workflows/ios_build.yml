@@ -59,6 +59,11 @@ jobs:
           cd ios/App
           pod install
 
+      - name: Update project settings
+        run: |
+          cd ios/App
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier fr.vestr.vestrapp" App/Info.plist
+
       - name: Build iOS
         run: |
           xcodebuild \
@@ -67,8 +72,10 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -archivePath $PWD/build/App.xcarchive \
-            -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM=6U47BQY2H3 \
+            PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
+            PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp \
             archive
 
       - name: Export IPA
