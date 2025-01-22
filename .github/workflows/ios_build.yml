@@ -66,6 +66,17 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
 
+      - name: Configure Xcode project
+        run: |
+          cd ios/App
+          xcrun xcodebuild -project App.xcodeproj -scheme App -showBuildSettings
+          /usr/libexec/PlistBuddy -c "Delete :provisioningProfiles" build/App.xcarchive/Info.plist || true
+          for target in CapacitorApp CapacitorCordova "Pods-App" Capacitor CapacitorBrowser CapacitorPreferences; do
+            xcrun xcodebuild -project Pods/Pods.xcodeproj -target "$target" \
+              CODE_SIGN_STYLE=Automatic \
+              DEVELOPMENT_TEAM=6U47BQY2H3
+          done
+
       - name: Build iOS
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
@@ -79,7 +90,8 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
             DEVELOPMENT_TEAM=6U47BQY2H3 \
             CODE_SIGN_IDENTITY="Apple Development" \
-            PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp
+            PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp \
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db"
 
       - name: Export IPA
         env:
