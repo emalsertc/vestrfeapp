@@ -1,0 +1,14 @@
+export { default as HomePage } from './home';
+export { default as AccountPage } from './account';
+export { default as StockAnalysisPage } from './stock-analysis';
+export { default as WatchlistPage } from './watchlist';
+export { default as PortfolioPage } from './account/portfolio';
+export { default as SettingsPage } from './account/settings';
+export { default as SocialPage } from './social';
+export { default as TopStocksPage } from './top-stocks';
+export { default as TopInvestorsPage } from './top-investors';
+export { default as RiskAssessmentPage } from './risk-assessment';
+export { default as CognitiveBiasPage } from './cognitive-bias';
+export { default as FAQPage } from './faq';
+export { default as ManualPage } from './manual';
+export { default as AuthCallback } from './auth/AuthCallback'; 

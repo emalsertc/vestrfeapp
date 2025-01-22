@@ -1,0 +1,28 @@
+{
+  "appId": "com.vestrfeapp.app",
+  "appName": "VestrFE",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true,
+    "hostname": "app",
+    "allowNavigation": ["http://127.0.0.1:8000/*"]
+  },
+  "plugins": {
+    "App": {
+      "url": "myapp",
+      "schemes": [
+        "myapp"
+      ]
+    },
+    "Browser": {
+      "presentationStyle": "fullscreen",
+      "toolbarColor": "#ffffff",
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "ios": {
+    "scheme": "VestrFE",
+    "contentInset": "always"
+  }
+}

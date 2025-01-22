@@ -1,0 +1,54 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-ios:
+    runs-on: macos-13
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: |
+          npm ci
+          npx ionic cap sync
+
+      - name: Install pods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Build iOS
+        run: |
+          xcodebuild \
+            -workspace "ios/App.xcworkspace" \
+            -scheme "App" \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $PWD/build/App.xcarchive \
+            archive
+
+      - name: Export IPA
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath $PWD/build/App.xcarchive \
+            -exportOptionsPlist ios/exportOptions.plist \
+            -exportPath $PWD/build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: App-Release-IPA
+          path: build/App.ipa 
