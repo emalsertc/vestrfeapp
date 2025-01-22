@@ -59,22 +59,33 @@ jobs:
           cd ios/App
           pod install
 
-      - name: Build iOS
+      - name: Update project settings
         run: |
-          xcodebuild \
-            -workspace "ios/App/App.xcworkspace" \
-            -scheme "App" \
+          cd ios/App
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier fr.vestr.vestrapp" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
+
+      - name: Build iOS
+        env:
+          DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+        run: |
+          xcodebuild clean archive \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
             -configuration Release \
-            -sdk iphoneos \
             -archivePath $PWD/build/App.xcarchive \
-            -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
-            archive
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
+            DEVELOPMENT_TEAM=6U47BQY2H3 \
+            CODE_SIGN_IDENTITY="Apple Development" \
+            PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp
 
       - name: Export IPA
+        env:
+          DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
         run: |
-          xcodebuild \
-            -exportArchive \
+          xcodebuild -exportArchive \
             -archivePath $PWD/build/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $PWD/build \
