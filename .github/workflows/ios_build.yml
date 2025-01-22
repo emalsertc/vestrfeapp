@@ -39,14 +39,22 @@ jobs:
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
 
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Debug: show certificate info
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+          
+          # Debug: show provisioning profile info
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
 
       - name: Install dependencies and sync
         run: |
@@ -65,6 +73,8 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier fr.vestr.vestrapp" App/Info.plist
 
       - name: Build iOS
+        env:
+          DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
         run: |
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
@@ -76,6 +86,7 @@ jobs:
             DEVELOPMENT_TEAM=6U47BQY2H3 \
             PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
             PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp \
+            CODE_SIGN_IDENTITY="Apple Development" \
             archive
 
       - name: Export IPA
