@@ -19,11 +19,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies and setup iOS
+      - name: Install dependencies and sync
         run: |
           npm ci
           npm run build
-          npx cap add ios
           npx cap sync ios
 
       - name: Install pods
