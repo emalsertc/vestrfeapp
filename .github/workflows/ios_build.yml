@@ -19,20 +19,22 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies and sync iOS
+      - name: Install dependencies and setup iOS
         run: |
           npm ci
+          npm run build
+          npx cap add ios
           npx cap sync ios
 
       - name: Install pods
         run: |
-          cd ios
-          pod install --repo-update
+          cd ios/App
+          pod install
 
       - name: Build iOS
         run: |
           xcodebuild \
-            -workspace "ios/App.xcworkspace" \
+            -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
             -configuration Release \
             -sdk iphoneos \
