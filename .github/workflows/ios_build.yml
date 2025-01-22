@@ -54,10 +54,18 @@ jobs:
           npm run build
           npx cap sync ios
 
-      - name: Install pods
+      - name: Create xcconfig
         run: |
           cd ios/App
-          pod install
+          echo "PROVISIONING_PROFILE_SPECIFIER=" > pods-signing.xcconfig
+          echo "CODE_SIGN_STYLE=Automatic" >> pods-signing.xcconfig
+          echo "DEVELOPMENT_TEAM=6U47BQY2H3" >> pods-signing.xcconfig
+          echo "CODE_SIGN_IDENTITY=Apple Development" >> pods-signing.xcconfig
+
+      - name: Install pods with config
+        run: |
+          cd ios/App
+          pod install --project-directory=. --config=Release XCCONFIG=pods-signing.xcconfig
 
       - name: Update project settings
         run: |
@@ -66,39 +74,30 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 1" App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
 
-      - name: Configure Xcode project
-        run: |
-          cd ios/App
-          xcrun xcodebuild -project App.xcodeproj -scheme App -showBuildSettings
-          /usr/libexec/PlistBuddy -c "Delete :provisioningProfiles" build/App.xcarchive/Info.plist || true
-          for target in CapacitorApp CapacitorCordova "Pods-App" Capacitor CapacitorBrowser CapacitorPreferences; do
-            xcrun xcodebuild -project Pods/Pods.xcodeproj -target "$target" \
-              CODE_SIGN_STYLE=Automatic \
-              DEVELOPMENT_TEAM=6U47BQY2H3
-          done
-
       - name: Build iOS
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
         run: |
+          cd ios/App
           xcodebuild clean archive \
-            -workspace ios/App/App.xcworkspace \
+            -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath $PWD/build/App.xcarchive \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
             DEVELOPMENT_TEAM=6U47BQY2H3 \
             CODE_SIGN_IDENTITY="Apple Development" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="Eliot Iphone" \
             PRODUCT_BUNDLE_IDENTIFIER=fr.vestr.vestrapp \
-            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db"
+            OTHER_CODE_SIGN_FLAGS="--keychain $RUNNER_TEMP/app-signing.keychain-db" \
+            GCC_PREPROCESSOR_DEFINITIONS='${inherited} COCOAPODS=1'
 
       - name: Export IPA
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
         run: |
           xcodebuild -exportArchive \
-            -archivePath $PWD/build/App.xcarchive \
+            -archivePath ios/App/build/App.xcarchive \
             -exportOptionsPlist ios/exportOptions.plist \
             -exportPath $PWD/build \
             -allowProvisioningUpdates
